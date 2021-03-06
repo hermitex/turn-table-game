@@ -7,19 +7,19 @@ class Game {
     this.availableCells = [];
     this.unavailableCells = [];
     this.gameContainerElement = gameContainerElement;
-    this.gameGridElement = this.gameContainerElement.querySelector('.grid');
+    this.gameGridElement = this.gameContainerElement.querySelector(".grid");
   }
 
   /**
    * This method when called initializes the game by generating the relevant
    * cells or grid etc.
    */
-  start() {
+  initializeGame() {
     const GRID_SIZE = 12;
     const PLAYERS = [
       {
-        name: 'Zeus',
-        className: 'player-1',
+        name: "Zeus",
+        className: "player-1",
         rowMin: 0,
         rowMax: Math.floor(GRID_SIZE / 3),
         colMin: 0,
@@ -30,8 +30,8 @@ class Game {
         speed: 2,
       },
       {
-        name: 'Poseidon',
-        className: 'player-2',
+        name: "Poseidon",
+        className: "player-2",
         rowMin: Math.floor(GRID_SIZE / 2),
         rowMax: GRID_SIZE - 1,
         colMin: 0,
@@ -46,28 +46,28 @@ class Game {
     const WEAPONS_COUNT = 5;
     const WEAPONS = [
       {
-        type: 'defense',
-        className: 'weapon-defense',
+        type: "defense",
+        className: "weapon-defense",
         effect: 10,
       },
       {
-        type: 'attack',
-        className: 'weapon-attack',
+        type: "attack",
+        className: "weapon-attack",
         effect: 20,
       },
       {
-        type: 'health',
-        className: 'weapon-health',
+        type: "health",
+        className: "weapon-health",
         effect: 10,
       },
       {
-        type: 'attack',
-        className: 'weapon-attack-super',
+        type: "attack",
+        className: "weapon-attack-super",
         effect: 40,
       },
       {
-        type: 'speed',
-        className: 'weapon-speed',
+        type: "speed",
+        className: "weapon-speed",
         effect: 3,
       },
     ];
@@ -133,11 +133,11 @@ class Grid {
    * @param {*} col
    */
   createGridItem(row, col) {
-    const gridItem = document.createElement('div');
-    gridItem.classList.add('grid-item');
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item");
     gridItem.classList.add(`cell_${row}_${col}`);
-    gridItem.setAttribute('data-row', row);
-    gridItem.setAttribute('data-col', col);
+    gridItem.setAttribute("data-row", row);
+    gridItem.setAttribute("data-col", col);
     return gridItem;
   }
 
@@ -162,13 +162,13 @@ class Item {
     this.col = col;
     this.itemClassName = itemClassName;
     this.avoidItems = [
-      'weapon-attack',
-      'weapon-attack-super',
-      'weapon-defense',
-      'weapon-health',
-      'weapon-speed',
-      'player-1',
-      'player-2',
+      "weapon-attack",
+      "weapon-attack-super",
+      "weapon-defense",
+      "weapon-health",
+      "weapon-speed",
+      "player-1",
+      "player-2",
     ];
   }
 
@@ -332,11 +332,11 @@ class DimmedCell extends Item {
    * and then added to the list of unavailable-cells
    */
   dimCell() {
-    let randCellRow = getRandomInt(0, this.GRID_SIZE - 1);
-    let randCellCol = getRandomInt(0, this.GRID_SIZE - 1);
+    let randCellRow = generateRandomNumber(0, this.GRID_SIZE - 1);
+    let randCellCol = generateRandomNumber(0, this.GRID_SIZE - 1);
 
     if (this.isAvailableCell(randCellRow, randCellCol)) {
-      this.placeItem(randCellRow, randCellCol, 'disabled');
+      this.placeItem(randCellRow, randCellCol, "disabled");
     } else {
       return this.dimCell();
     }
@@ -364,8 +364,8 @@ class Player extends Item {
    * Adds a player randomly onto the grid or map
    */
   addPlayer() {
-    let randCellRow = getRandomInt(0, this.GRID_SIZE - 1);
-    let randCellCol = getRandomInt(0, this.GRID_SIZE - 1);
+    let randCellRow = generateRandomNumber(0, this.GRID_SIZE - 1);
+    let randCellCol = generateRandomNumber(0, this.GRID_SIZE - 1);
 
     // ensures the player begin at different sides of the map.
     if (
@@ -401,8 +401,8 @@ class Weapon extends Item {
    * Adds weapon onto the grid or map randomly
    */
   addWeapon() {
-    let randCellRow = getRandomInt(1, this.GRID_SIZE - 2);
-    let randCellCol = getRandomInt(1, this.GRID_SIZE - 2);
+    let randCellRow = generateRandomNumber(1, this.GRID_SIZE - 2);
+    let randCellCol = generateRandomNumber(1, this.GRID_SIZE - 2);
 
     if (this.isAvailableCell(randCellRow, randCellCol)) {
       // check if there are any nearby weapons
@@ -428,33 +428,33 @@ class GameUtility {
     this.weapons = weapons;
     this.playerTurn = 0;
     this.MAX_HIGHLIGHTED_CELLS = 2;
-    this.updatePlayerPoints();
+    this.updatePlayerScore();
     this.handleGameEvents();
-    this.highlightPlayerAvaialableCells();
+    this.highlightLegalCells();
   }
 
   /**
-   * Adds a click event to each cell and if it is clicked, calls the checkPlayerTurn method to check
+   * Adds a click event to each cell and if it is clicked, calls the checkIfPlayerIsToPlay method to check
    * the current player's turn and utilizes the returned value to retrieve the player's html element.
    * Then removes the associated class from its old location or position and adds a new class to the new position
    * It also changes the player turn to then player and highlighs available cell
    */
   handleGameEvents() {
     const gridItems = this.game.gameContainerElement.querySelectorAll(
-      '.grid-item'
+      ".grid-item"
     );
 
     for (let item of gridItems) {
-      item.addEventListener('click', () => {
-        let player = this.checkPlayerTurn();
+      item.addEventListener("click", () => {
+        let player = this.checkIfPlayerIsToPlay();
         let playerElement = this.game.gameContainerElement.querySelector(
           `.${player}`
         );
         playerElement.classList.remove(player);
         item.classList.add(player);
 
-        let playerRow = item.getAttribute('data-row');
-        let playerCol = item.getAttribute('data-col');
+        let playerRow = item.getAttribute("data-row");
+        let playerCol = item.getAttribute("data-col");
 
         // Hit a weapon?
         this.takeWeapon(this.playerTurn, item);
@@ -468,7 +468,7 @@ class GameUtility {
         this.playerTurn = this.playerTurn == 0 ? 1 : 0;
 
         // Highlight Available Cells
-        this.highlightPlayerAvaialableCells();
+        this.highlightLegalCells();
       });
     }
   }
@@ -478,73 +478,73 @@ class GameUtility {
    * @param {*} playerIndex
    * @param {*} attack
    */
-  getPlayerDashboard(playerIndex, attack = false) {
+  getPlayerGridPosition(playerIndex, attack = false) {
     return this.game.gameContainerElement.querySelector(
-      `#${attack ? 'combat_' : ''}player_${playerIndex + 1}_dashboard`
+      `#${attack ? "combat_" : ""}player_${playerIndex + 1}_dashboard`
     );
   }
 
   /**
    * Checks if the `landedCell` has a weapon or not, if yes remove that weapon.
    * Also, it Increases/Decreases games statistics based on the weapon and animate it
-   * It then calls the `updatePlayerPoints` method to update stats change.
+   * It then calls the `updatePlayerScore` method to update stats change.
    * @param {*} currentPlayer
    * @param {*} landedCell
    */
   takeWeapon(currentPlayer, landedCell) {
-    if (landedCell.classList.contains('weapon-attack')) {
-      landedCell.classList.remove('weapon-attack');
+    if (landedCell.classList.contains("weapon-attack")) {
+      landedCell.classList.remove("weapon-attack");
       this.players[currentPlayer].attack = this.weapons[1].effect;
 
-      this.getPlayerDashboard(currentPlayer)
-        .querySelector('#attack')
-        .classList.add('updatePlayerPoints');
+      this.getPlayerGridPosition(currentPlayer)
+        .querySelector("#attack")
+        .classList.add("updatePlayerScore");
       setTimeout(() => {
-        this.getPlayerDashboard(currentPlayer)
-          .querySelector('#attack')
-          .classList.remove('updatePlayerPoints');
+        this.getPlayerGridPosition(currentPlayer)
+          .querySelector("#attack")
+          .classList.remove("updatePlayerScore");
       }, 1000);
-      this.updatePlayerPoints();
-    } else if (landedCell.classList.contains('weapon-defense')) {
-      landedCell.classList.remove('weapon-defense');
+      this.updatePlayerScore();
+    } else if (landedCell.classList.contains("weapon-defense")) {
+      landedCell.classList.remove("weapon-defense");
       this.players[currentPlayer].shield += this.weapons[0].effect;
 
-      this.getPlayerDashboard(currentPlayer)
-        .querySelector('#shield')
-        .classList.add('updatePlayerPoints');
+      this.getPlayerGridPosition(currentPlayer)
+        .querySelector("#shield")
+        .classList.add("updatePlayerScore");
       setTimeout(() => {
-        this.getPlayerDashboard(currentPlayer)
-          .querySelector('#shield')
-          .classList.remove('updatePlayerPoints');
+        this.getPlayerGridPosition(currentPlayer)
+          .querySelector("#shield")
+          .classList.remove("updatePlayerScore");
       }, 1000);
-      this.updatePlayerPoints();
-    } else if (landedCell.classList.contains('weapon-health')) {
-      landedCell.classList.remove('weapon-health');
+      this.updatePlayerScore();
+    } else if (landedCell.classList.contains("weapon-health")) {
+      landedCell.classList.remove("weapon-health");
       this.players[currentPlayer].health += this.weapons[2].effect;
-      this.getPlayerDashboard(currentPlayer)
-        .querySelector('#health')
-        .classList.add('updatePlayerPoints');
+      this.getPlayerGridPosition(currentPlayer)
+        .querySelector("#health")
+        .classList.add("updatePlayerScore");
       setTimeout(() => {
-        this.getPlayerDashboard(currentPlayer)
-          .querySelector('#health')
-          .classList.remove('updatePlayerPoints');
+        this.getPlayerGridPosition(currentPlayer)
+          .querySelector("#health")
+          .classList.remove("updatePlayerScore");
       }, 1000);
-      this.updatePlayerPoints();
-    } else if (landedCell.classList.contains('weapon-attack-super')) {
-      landedCell.classList.remove('weapon-attack-super');
+      this.updatePlayerScore();
+    } else if (landedCell.classList.contains("weapon-attack-super")) {
+      landedCell.classList.remove("weapon-attack-super");
       this.players[currentPlayer].attack = this.weapons[3].effect;
 
-      this.getPlayerDashboard(currentPlayer)
-        .querySelector('#attack')
-        .classList.add('updatePlayerPoints');
+      this.getPlayerGridPosition(currentPlayer)
+        .querySelector("#attack")
+        .classList.add("updatePlayerScore");
       setTimeout(() => {
-        this.getPlayerDashboard(currentPlayer)
-          .querySelector('#attack')
-          .classList.remove('updatePlayerPoints');
+        this.getPlayerGridPosition(currentPlayer)
+          .querySelector("#attack")
+          .classList.remove("updatePlayerScore");
       }, 1000);
-      this.updatePlayerPoints();
-    } else if (landedCell.classList.contains('weapon-speed')) {
-      landedCell.classList.remove('weapon-speed');
+      this.updatePlayerScore();
+    } else if (landedCell.classList.contains("weapon-speed")) {
+      landedCell.classList.remove("weapon-speed");
       this.players[currentPlayer].speed = this.weapons[4].effect;
     }
   }
@@ -552,27 +552,27 @@ class GameUtility {
   /**
    * Updates the players point statistics
    */
-  updatePlayerPoints() {
-    const playerOneDashboard = this.getPlayerDashboard(0);
-    const playerTwoDashboard = this.getPlayerDashboard(1);
+  updatePlayerScore() {
+    const playerOneDashboard = this.getPlayerGridPosition(0);
+    const playerTwoDashboard = this.getPlayerGridPosition(1);
     playerOneDashboard.querySelector(
-      '#health'
+      "#health"
     ).innerHTML = this.players[0].health;
     playerOneDashboard.querySelector(
-      '#attack'
+      "#attack"
     ).innerHTML = this.players[0].attack;
     playerOneDashboard.querySelector(
-      '#shield'
+      "#shield"
     ).innerHTML = this.players[0].shield;
 
     playerTwoDashboard.querySelector(
-      '#health'
+      "#health"
     ).innerHTML = this.players[1].health;
     playerTwoDashboard.querySelector(
-      '#attack'
+      "#attack"
     ).innerHTML = this.players[1].attack;
     playerTwoDashboard.querySelector(
-      '#shield'
+      "#shield"
     ).innerHTML = this.players[1].shield;
   }
 
@@ -580,27 +580,27 @@ class GameUtility {
    * Updates the game points for the players during a battle or attack
    */
   updateAttackPoints() {
-    const combatPlayerOneDashboard = this.getPlayerDashboard(0, true);
-    const combatPlayerTwoDashboard = this.getPlayerDashboard(1, true);
+    const combatPlayerOneDashboard = this.getPlayerGridPosition(0, true);
+    const combatPlayerTwoDashboard = this.getPlayerGridPosition(1, true);
 
     combatPlayerOneDashboard.querySelector(
-      '#health'
+      "#health"
     ).innerHTML = this.players[0].health;
     combatPlayerOneDashboard.querySelector(
-      '#attack'
+      "#attack"
     ).innerHTML = this.players[0].attack;
     combatPlayerOneDashboard.querySelector(
-      '#shield'
+      "#shield"
     ).innerHTML = this.players[0].shield;
 
     combatPlayerTwoDashboard.querySelector(
-      '#health'
+      "#health"
     ).innerHTML = this.players[1].health;
     combatPlayerTwoDashboard.querySelector(
-      '#attack'
+      "#attack"
     ).innerHTML = this.players[1].attack;
     combatPlayerTwoDashboard.querySelector(
-      '#shield'
+      "#shield"
     ).innerHTML = this.players[1].shield;
   }
 
@@ -608,11 +608,13 @@ class GameUtility {
    * Resets the active player turn and adds `active-class` to the most current player and
    * returns the current player which is used in the `handleGameEvents()` method
    */
-  checkPlayerTurn() {
+  checkIfPlayerIsToPlay() {
     const currentPlayer = this.playerTurn;
     this.resetPlayerTurn();
-    this.getPlayerDashboard(currentPlayer).classList.add('active-turn');
-    this.getPlayerDashboard(currentPlayer, true).classList.add('active-turn');
+    this.getPlayerGridPosition(currentPlayer).classList.add("active-turn");
+    this.getPlayerGridPosition(currentPlayer, true).classList.add(
+      "active-turn"
+    );
     return `player-${this.playerTurn + 1}`;
   }
 
@@ -621,11 +623,11 @@ class GameUtility {
    */
   resetPlayerTurn() {
     let activeTurn = this.game.gameContainerElement.querySelectorAll(
-      '.active-turn'
+      ".active-turn"
     );
 
     for (let i = 0; i < activeTurn.length; i++) {
-      activeTurn[i].classList.remove('active-turn');
+      activeTurn[i].classList.remove("active-turn");
     }
   }
 
@@ -633,16 +635,16 @@ class GameUtility {
    * Indicates all the locations available to an `active-player` and by default player-1 `Spongebob`
    * has the active state.
    */
-  highlightPlayerAvaialableCells() {
+  highlightLegalCells() {
     this.resetHighlightedCells();
 
-    let player = this.checkPlayerTurn();
+    let player = this.checkIfPlayerIsToPlay();
     let playerElement = this.game.gameContainerElement.querySelector(
       `.${player}`
     );
 
-    let row = parseInt(playerElement.getAttribute('data-row'));
-    let col = parseInt(playerElement.getAttribute('data-col'));
+    let row = parseInt(playerElement.getAttribute("data-row"));
+    let col = parseInt(playerElement.getAttribute("data-col"));
 
     // Top
     for (let i = 1; i <= this.players[this.playerTurn].speed; i++) {
@@ -653,10 +655,10 @@ class GameUtility {
       // Check if cell is unavailable
       if (row - i < 0) {
         break;
-      } else if (topCell.classList.contains('disabled')) {
+      } else if (topCell.classList.contains("disabled")) {
         break;
       } else {
-        topCell.classList.add('highlighted');
+        topCell.classList.add("highlighted");
       }
     }
 
@@ -669,10 +671,10 @@ class GameUtility {
       // Check if cell is unavailable
       if (col + i > 11) {
         break;
-      } else if (rightCell.classList.contains('disabled')) {
+      } else if (rightCell.classList.contains("disabled")) {
         break;
       } else {
-        rightCell.classList.add('highlighted');
+        rightCell.classList.add("highlighted");
       }
     }
 
@@ -685,10 +687,10 @@ class GameUtility {
       // Check if cell is unavailable
       if (row + i > 11) {
         break;
-      } else if (bottomCell.classList.contains('disabled')) {
+      } else if (bottomCell.classList.contains("disabled")) {
         break;
       } else {
-        bottomCell.classList.add('highlighted');
+        bottomCell.classList.add("highlighted");
       }
     }
 
@@ -701,10 +703,10 @@ class GameUtility {
       // Check if cell is unavailable
       if (col - i < 0) {
         break;
-      } else if (leftCell.classList.contains('disabled')) {
+      } else if (leftCell.classList.contains("disabled")) {
         break;
       } else {
-        leftCell.classList.add('highlighted');
+        leftCell.classList.add("highlighted");
       }
     }
   }
@@ -715,10 +717,10 @@ class GameUtility {
    */
   resetHighlightedCells() {
     let highlightedCells = this.game.gameContainerElement.querySelectorAll(
-      '.highlighted'
+      ".highlighted"
     );
     for (let cell of highlightedCells) {
-      cell.classList.remove('highlighted');
+      cell.classList.remove("highlighted");
     }
   }
 
@@ -733,7 +735,7 @@ class GameUtility {
     row = parseInt(row);
     col = parseInt(col);
 
-    let opponentPlayer = currentPlayer == 0 ? 'player-2' : 'player-1';
+    let opponentPlayer = currentPlayer == 0 ? "player-2" : "player-1";
 
     let topCell = this.game.gameContainerElement.querySelector(
       `.cell_${row - 1}_${col}`
@@ -778,9 +780,9 @@ class GameUtility {
    */
   startAttackState() {
     let combatModeModal = this.game.gameContainerElement.querySelector(
-      '.attack-state'
+      ".attack-state"
     );
-    combatModeModal.classList.add('visible');
+    combatModeModal.classList.add("visible");
 
     this.updateAttackPoints();
 
@@ -809,26 +811,26 @@ class GameUtility {
     this.players[currentPlayer].health -= damage;
 
     // Animate stats
-    this.getPlayerDashboard(currentPlayer)
-      .querySelector('#health')
-      .classList.add('updatePlayerPoints');
+    this.getPlayerGridPosition(currentPlayer)
+      .querySelector("#health")
+      .classList.add("updatePlayerScore");
     setTimeout(() => {
-      this.getPlayerDashboard(currentPlayer)
-        .querySelector('#health')
-        .classList.remove('updatePlayerPoints');
+      this.getPlayerGridPosition(currentPlayer)
+        .querySelector("#health")
+        .classList.remove("updatePlayerScore");
     }, 500);
 
     this.updateAttackPoints();
 
     if (this.players[currentPlayer].health <= 0) {
-      this.getPlayerDashboard(currentPlayer).querySelector(
-        '#health'
+      this.getPlayerGridPosition(currentPlayer).querySelector(
+        "#health"
       ).innerHTML = 0;
 
       clearInterval(timer);
-      this.announceTheWinner(this.players[nextPlayer].name);
+      this.declareWinner(this.players[nextPlayer].name);
     } else {
-      this.checkPlayerTurn();
+      this.checkIfPlayerIsToPlay();
     }
   }
 
@@ -836,30 +838,30 @@ class GameUtility {
    * Indicates the winner in a game
    * @param {*} winner
    */
-  announceTheWinner(winner) {
+  declareWinner(winner) {
     // Show Victory Popup
     let victoryPopup = this.game.gameContainerElement.querySelector(
-      '.attack-state.victory'
+      ".attack-state.victory"
     );
-    victoryPopup.classList.add('visible');
+    victoryPopup.classList.add("visible");
 
     // Add winner text
     let winnerElem = this.game.gameContainerElement.querySelector(
-      '.attack-state.victory .inner h2'
+      ".attack-state.victory .inner h2"
     );
     winnerElem.innerHTML = `<span>${winner}</span> wins!`;
 
-    // Restart the game
-    let restartBtn = this.game.gameContainerElement.querySelector(
-      '.attack-state.victory .inner .btn'
+    // reinitialize the game
+    let reinitializeGameBtn = this.game.gameContainerElement.querySelector(
+      ".attack-state.victory .inner .btn"
     );
-    restartBtn.addEventListener('click', () => {
-      this.restart();
+    reinitializeGameBtn.addEventListener("click", () => {
+      this.reinitializeGame();
     });
   }
 
   // refreshes or reloads the page
-  restart() {
+  reinitializeGame() {
     location.reload();
   }
 }
@@ -869,7 +871,7 @@ class GameUtility {
  * @param {*} min
  * @param {*} max
  */
-function getRandomInt(min, max) {
+function generateRandomNumber(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -878,5 +880,5 @@ function getRandomInt(min, max) {
 /**
  * Creates a new instance of the Game object and calls the `start()` method
  */
-let game = new Game(document.querySelector('#game'));
-game.start();
+let game = new Game(document.querySelector("#game"));
+game.initializeGame();
