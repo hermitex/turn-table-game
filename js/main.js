@@ -18,7 +18,7 @@ class Game {
     const GRID_SIZE = 12;
     const PLAYERS = [
       {
-        name: "Zeus",
+        name: "Jigglypuff",
         className: "player-1",
         rowMin: 0,
         rowMax: Math.floor(GRID_SIZE / 3),
@@ -30,7 +30,7 @@ class Game {
         speed: 2,
       },
       {
-        name: "Poseidon",
+        name: "Snorlax",
         className: "player-2",
         rowMin: Math.floor(GRID_SIZE / 2),
         rowMax: GRID_SIZE - 1,
