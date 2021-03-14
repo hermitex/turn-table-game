@@ -4,7 +4,7 @@
 class Game {
   // Game constructer
   constructor(gameContainerElement) {
-    this.availableCells = [];
+    this.legalCells = [];
     this.unavailableCells = [];
     this.gameContainerElement = gameContainerElement;
     this.gameGridElement = this.gameContainerElement.querySelector(".grid");
@@ -15,15 +15,15 @@ class Game {
    * cells or grid etc.
    */
   initializeGame() {
-    const GRID_SIZE = 12;
+    const GRID_DIMENSION = 12;
     const PLAYERS = [
       {
         name: "Jigglypuff",
         className: "player-1",
         rowMin: 0,
-        rowMax: Math.floor(GRID_SIZE / 3),
+        rowMax: Math.floor(GRID_DIMENSION / 3),
         colMin: 0,
-        colMax: GRID_SIZE - 1,
+        colMax: GRID_DIMENSION - 1,
         health: 100,
         attack: 10,
         shield: 10,
@@ -32,10 +32,10 @@ class Game {
       {
         name: "Snorlax",
         className: "player-2",
-        rowMin: Math.floor(GRID_SIZE / 2),
-        rowMax: GRID_SIZE - 1,
+        rowMin: Math.floor(GRID_DIMENSION / 2),
+        rowMax: GRID_DIMENSION - 1,
         colMin: 0,
-        colMax: GRID_SIZE - 1,
+        colMax: GRID_DIMENSION - 1,
         health: 100,
         attack: 10,
         shield: 10,
@@ -73,26 +73,26 @@ class Game {
     ];
 
     // create a new instance of the Grid class or object
-    new Grid(this.gameGridElement, GRID_SIZE, this);
+    new Grid(this.gameGridElement, GRID_DIMENSION, this);
 
     // Dimmed Cells
-    const dimmedCells = new DimmedCell(GRID_SIZE, this);
+    const dimmedCells = new DimmedCell(GRID_DIMENSION, this);
     for (let i = 0; i < DISABLED_CELLS; i++) {
       dimmedCells.dimCell();
     }
 
     // create the Players by instantiating the Player class
     // and passing them their parameters
-    new Player(GRID_SIZE, PLAYERS[0], this);
-    new Player(GRID_SIZE, PLAYERS[1], this);
+    new Player(GRID_DIMENSION, PLAYERS[0], this);
+    new Player(GRID_DIMENSION, PLAYERS[1], this);
 
     // WEAPONS
     for (let i = 0; i < WEAPONS_COUNT; i++) {
-      new Weapon(GRID_SIZE, WEAPONS[0], this);
-      new Weapon(GRID_SIZE, WEAPONS[1], this);
-      new Weapon(GRID_SIZE, WEAPONS[2], this);
-      new Weapon(GRID_SIZE, WEAPONS[3], this);
-      new Weapon(GRID_SIZE, WEAPONS[4], this);
+      new Weapon(GRID_DIMENSION, WEAPONS[0], this);
+      new Weapon(GRID_DIMENSION, WEAPONS[1], this);
+      new Weapon(GRID_DIMENSION, WEAPONS[2], this);
+      new Weapon(GRID_DIMENSION, WEAPONS[3], this);
+      new Weapon(GRID_DIMENSION, WEAPONS[4], this);
     }
 
     // GameUtility
@@ -119,7 +119,7 @@ class Grid {
     for (let row = 0; row < this.gridSize; row++) {
       for (let col = 0; col < this.gridSize; col++) {
         this.gridContainer.appendChild(this.createGridItem(row, col));
-        this.game.availableCells.push([row, col]);
+        this.game.legalCells.push([row, col]);
       }
     }
 
@@ -322,9 +322,9 @@ class Item {
  */
 class DimmedCell extends Item {
   // DimmedCell constructor > extending Item
-  constructor(GRID_SIZE) {
+  constructor(GRID_DIMENSION) {
     super(null, null, null, game);
-    this.GRID_SIZE = GRID_SIZE;
+    this.GRID_DIMENSION = GRID_DIMENSION;
   }
 
   /**
@@ -332,8 +332,8 @@ class DimmedCell extends Item {
    * and then added to the list of unavailable-cells
    */
   dimCell() {
-    let randCellRow = generateRandomNumber(0, this.GRID_SIZE - 1);
-    let randCellCol = generateRandomNumber(0, this.GRID_SIZE - 1);
+    let randCellRow = generateRandomNumber(0, this.GRID_DIMENSION - 1);
+    let randCellCol = generateRandomNumber(0, this.GRID_DIMENSION - 1);
 
     if (this.isAvailableCell(randCellRow, randCellCol)) {
       this.placeItem(randCellRow, randCellCol, "disabled");
@@ -348,9 +348,9 @@ class DimmedCell extends Item {
  */
 class Player extends Item {
   // Player constructor > extending Item
-  constructor(GRID_SIZE, player, game) {
+  constructor(GRID_DIMENSION, player, game) {
     super(null, null, null, game);
-    this.GRID_SIZE = GRID_SIZE;
+    this.GRID_DIMENSION = GRID_DIMENSION;
     this.rowMin = player.rowMin;
     this.rowMax = player.rowMax;
     this.colMin = player.colMin;
@@ -364,8 +364,8 @@ class Player extends Item {
    * Adds a player randomly onto the grid or map
    */
   addPlayer() {
-    let randCellRow = generateRandomNumber(0, this.GRID_SIZE - 1);
-    let randCellCol = generateRandomNumber(0, this.GRID_SIZE - 1);
+    let randCellRow = generateRandomNumber(0, this.GRID_DIMENSION - 1);
+    let randCellCol = generateRandomNumber(0, this.GRID_DIMENSION - 1);
 
     // ensures the player begin at different sides of the map.
     if (
@@ -390,9 +390,9 @@ class Player extends Item {
  */
 class Weapon extends Item {
   // Constructor
-  constructor(GRID_SIZE, weapon, game) {
+  constructor(GRID_DIMENSION, weapon, game) {
     super(null, null, null, game);
-    this.GRID_SIZE = GRID_SIZE;
+    this.GRID_DIMENSION = GRID_DIMENSION;
     this.className = weapon.className;
     this.addWeapon();
   }
@@ -401,8 +401,8 @@ class Weapon extends Item {
    * Adds weapon onto the grid or map randomly
    */
   addWeapon() {
-    let randCellRow = generateRandomNumber(1, this.GRID_SIZE - 2);
-    let randCellCol = generateRandomNumber(1, this.GRID_SIZE - 2);
+    let randCellRow = generateRandomNumber(1, this.GRID_DIMENSION - 2);
+    let randCellCol = generateRandomNumber(1, this.GRID_DIMENSION - 2);
 
     if (this.isAvailableCell(randCellRow, randCellCol)) {
       // check if there are any nearby weapons
